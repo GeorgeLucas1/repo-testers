@@ -17,6 +17,7 @@ Este repositório foi criado com foco em aprendizado autodidata na área de QA (
 - Testes de pico (Spike Test)
 - Automação com Python
 - Ferramentas utilizadas pelo mercado de QA
+- ci/cd
 
 ## Objetivo do projeto
 
