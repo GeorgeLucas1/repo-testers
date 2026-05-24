@@ -18,6 +18,7 @@ Este repositório foi criado com foco em aprendizado autodidata na área de QA (
 - Automação com Python
 - Ferramentas utilizadas pelo mercado de QA
 - ci/cd
+- pentester
 
 ## Objetivo do projeto
 
