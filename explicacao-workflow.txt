@@ -1,0 +1,123 @@
+EXPLICAÇÃO — GitHub Actions: Stress Test com Locust
+====================================================
+
+1. POR QUE NÃO ESTAVA FUNCIONANDO?
+----------------------------------
+
+   a) CAMINHO DO ARQUIVO ERRADO
+      O workflow apontava para:  teste_stress/locustfile.py
+      Mas a pasta teste_stress/ estava VAZIA.
+      O locustfile.py real estava na RAIZ do repositório.
+
+   b) GATILHO APENAS MANUAL
+      O workflow só rodava com workflow_dispatch (manual).
+      NÃO rodava automaticamente ao dar git push.
+
+   c) INPUTS INCORRETOS DA ACTION
+      A action apardo04/locust-github-action@1.1.0
+      espera inputs com nomes MAIÚSCULOS e SEM HÍFEN:
+
+          Input usado (errado) → Input correto (esperado)
+          locustfile            → LOCUSTFILE
+          users                 → USERS
+          spawn-rate            → RATE
+          run-time              → RUNTIME
+          host                  → URL
+
+      O GitHub Actions alertou:
+      "Unexpected input(s) 'spawn-rate', 'run-time',
+       valid inputs are ['LOCUSTFILE', 'USERS', 'RATE', 'RUNTIME', 'URL']"
+
+   d) HOST REMOVIDO
+      Ao corrigir o path, o host (URL) foi removido, mas a action
+      precisa dele para saber qual endpoint testar.
+
+   e) FALTA DO requirements.txt
+      A action tenta instalar dependências via pip -r requirements.txt.
+      Sem o arquivo, o pip lançava erro:
+      "Could not open requirements file: requirements.txt"
+
+
+2. O QUE FOI FEITO PARA CORRIGIR?
+----------------------------------
+
+   ✓ Caminho corrigido para: locustfile.py
+   ✓ Adicionado trigger push na branch main
+   ✓ Inputs renomeados para: LOCUSTFILE, URL, USERS, RATE, RUNTIME
+   ✓ URL adicionada de volta: https://automationexercise.com
+   ✓ Criado requirements.txt com a dependência "locust"
+
+
+3. BOAS PRÁTICAS APRENDIDAS
+----------------------------
+
+   a) SEMPRE verifique o caminho dos arquivos
+      O locustfile precisa estar no local exato indicado no workflow.
+      Use a mesma estrutura de pastas do repositório.
+
+   b) CONHEÇA os inputs da action que você está usando
+      Cada action de terceiros tem seus próprios inputs.
+      Leia o README ou action.yml da action antes de usar:
+      https://github.com/apardo04/locust-github-action
+
+   c) PREFIRA triggers automáticos
+      workflow_dispatch é útil para testes manuais,
+      mas combine com push ou schedule para execuções automáticas.
+
+   d) SEMPRE tenha um requirements.txt
+      Mesmo que seja só uma dependência, o arquivo é necessário
+      para ações que instalam pacotes Python.
+
+   e) VALIDE o YAML antes de commitar
+      Use um linter de YAML (ex: yamllint) para evitar erros
+      de indentação ou formatação.
+
+   f) TESTE o workflow localmente (se possível)
+      Ferramentas como act (https://github.com/nektos/act)
+      permitem rodar GitHub Actions localmente antes de subir.
+
+
+4. COMO ESTRUTURAR UM YML DE WORKFLOW FACILMENTE
+-------------------------------------------------
+
+   Use este template como base:
+
+   ```yaml
+   name: Nome do Workflow      # ← identificação no GitHub
+
+   on:                         # ← gatilhos
+     workflow_dispatch:        #   roda manualmente
+     push:
+       branches: [main]        #   roda ao push na main
+     schedule:
+       - cron: '0 6 * * 1'    #   roda toda segunda 06:00 UTC
+
+   jobs:                       # ← o que vai executar
+     nome-do-job:              #   identificador interno
+       runs-on: ubuntu-latest  #   sistema operacional
+       steps:
+         - uses: actions/checkout@v4
+         - name: Descrição do passo
+           run: comando
+   ```
+
+   DICAS PARA FACILITAR:
+   a) Nomes descritivos → name e jobs com nomes que explicam o propósito
+   b) Steps nomeados    → sempre use name: para cada passo
+   c) Um workflow por responsabilidade → separar test, deploy, lint
+   d) Reuse actions prontas → actions/checkout, actions/setup-python, etc.
+   e) Teste local com act → https://github.com/nektos/act
+   f) Evite valores fixos → use variáveis com ${{ vars.NOME }} ou ${{ secrets.NOME }}
+   g) Valide o YAML antes de commitar → yamllint ou https://www.yamllint.com
+
+
+5. ESTRUTURA FINAL DO REPOSITÓRIO
+----------------------------------
+
+   repo-testers/
+   ├── .github/
+   │   └── workflows/
+   │       └── stress-test.yml
+   ├── locustfile.py
+   ├── requirements.txt
+   └── explicacao-workflow.txt  ← este arquivo
