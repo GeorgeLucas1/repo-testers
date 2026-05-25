@@ -14,7 +14,8 @@ jobs:
 
       - uses: apardo04/locust-github-action@1.1.0
         with:
-          locustfile: locustfile.py
-          users: 10
-          spawn-rate: 2
-          run-time: 30s
+          LOCUSTFILE: locustfile.py
+          URL: https://automationexercise.com
+          USERS: 10
+          RATE: 2
+          RUNTIME: 30s
