@@ -1,0 +1,19 @@
+name: Stress Test com Locust
+
+on:
+  workflow_dispatch:
+
+jobs:
+  locust:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: apardo04/locust-github-action@1.1.0
+        with:
+          locustfile: teste_stress/locustfile.py
+          host: https://automationexercise.com
+          users: 10
+          spawn-rate: 2
+          run-time: 30s
