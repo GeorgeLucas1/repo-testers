@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # corrige o aviso de Node.js 20
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   stress-test:
@@ -25,9 +25,15 @@ jobs:
       - name: Instalar dependências
         run: pip install locust
 
+      - name: Debug — confirmar arquivos
+        run: |
+          echo "Diretório atual: $(pwd)"
+          ls -la
+
       - name: Rodar stress test
         run: |
           locust \
+            --locustfile locustfile.py \
             --headless \
             --users 50 \
             --spawn-rate 5 \
@@ -35,10 +41,6 @@ jobs:
             --host https://automationexercise.com \
             --csv relatorio \
             --html relatorio.html
-        working-directory: ${{ github.workspace }} # garante que os arquivos são salvos no lugar certo
-
-      - name: Listar arquivos gerados # confirma o que foi criado antes de fazer upload
-        run: ls -la
 
       - name: Salvar relatório como artefato
         uses: actions/upload-artifact@v4
@@ -49,4 +51,4 @@ jobs:
             relatorio.html
             relatorio_stats.csv
             relatorio_failures.csv
-          if-no-files-found: warn # 
+          if-no-files-found: warn
