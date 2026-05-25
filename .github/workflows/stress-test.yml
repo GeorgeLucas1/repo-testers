@@ -1,31 +1,30 @@
-name: Stress Test com Locust # REGRA 5: comentário — nome do workflow
+name: Stress Test com Locust
 
-on: # REGRA 1: chave: valor
+on:
   push:
     branches:
-      - main # dispara quando você faz push na branch main
+      - main
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # corrige o aviso de Node.js 20
 
 jobs:
-  stress-test: # nome do job
-    runs-on: ubuntu-latest # máquina virtual Linux gratuita do GitHub
+  stress-test:
+    runs-on: ubuntu-latest
 
     steps:
 
-      # ── STEP 1: baixa o seu código na máquina virtual ──────────────
-      - name: Locust
+      - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      # ── STEP 2: instala o Python ────────────────────────────────────
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      # ── STEP 3: instala o Locust ────────────────────────────────────
       - name: Instalar dependências
         run: pip install locust
 
-      # ── STEP 4: roda o teste (modo headless = sem interface gráfica) ─
       - name: Rodar stress test
         run: |
           locust \
@@ -36,14 +35,18 @@ jobs:
             --host https://automationexercise.com \
             --csv relatorio \
             --html relatorio.html
+        working-directory: ${{ github.workspace }} # garante que os arquivos são salvos no lugar certo
 
-      # ── STEP 5: salva os relatórios para download no GitHub ─────────
+      - name: Listar arquivos gerados # confirma o que foi criado antes de fazer upload
+        run: ls -la
+
       - name: Salvar relatório como artefato
         uses: actions/upload-artifact@v4
-        if: always() # salva mesmo se o teste falhar
+        if: always()
         with:
           name: relatorio-locust
           path: |
             relatorio.html
             relatorio_stats.csv
             relatorio_failures.csv
+          if-no-files-found: warn # 
